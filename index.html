@@ -734,6 +734,9 @@ const PRODUCTS = {
     methods: {
       spray:  { label: '🚿 Foliar Spray',    ppmRange: [600, 2000],  commonPpm: [750,1000,1500,2000],
                 note: 'Label: 600–2,000 ppm = 0.66–2.17 fl oz/gal. Often tank-mixed with Dazide 85 WSG for synergistic effect. Poinsettia: 800–1,500 ppm.' },
+      injector: { label: '💉 Foliar Spray via Injector / Boom (1:50)', ppmRange: [600, 2000], commonPpm: [750,1000,1500,2000],
+                ratio: 50,
+                note: 'Citadel at 1:50 injector ratio — stock is 50× concentrated. High use-rate requires 1:50 to keep stock volume practical. Often tank-mixed with Dazide 85 WSG.' },
       drench: { label: '🪣 Substrate Drench (via Injector)', ppmRange: [2000, 3000], commonPpm: [2000,2500,3000],
                 note: 'Applied via 1:100 injector. Rates are higher than spray for Citadel. Primarily used for poinsettia: 2,000–3,000 ppm. Verify label for your crop.' }
     },
@@ -830,7 +833,9 @@ const PRODUCTS = {
     unit: 'ml', isGranule: false,
     methods: {
       spray: { label: '🚿 Foliar Spray Only', ppmRange: [1, 5], commonPpm: [1,2,3,5],
-               note: '⚠️ Label verification required. Fresco contains 6-BA + gibberellin GA4+7. Range: 0.2–21 mL/gal depending on crop. Consult current Fine Americas label.' }
+               note: '⚠️ Label verification required. Fresco contains 6-BA + gibberellin GA4+7. Range: 0.2–21 mL/gal depending on crop. Consult current Fine Americas label.' },
+      injector: { label: '💉 Foliar Spray via Injector / Boom (1:100)', ppmRange: [1, 5], commonPpm: [1,2,3,5],
+               note: '⚠️ Label verification required. Same target concentration as direct spray. Injector dilutes stock 1:100 at the boom. Consult current Fine Americas label.' }
     },
     notes: '⚠️ VERIFY CURRENT LABEL: Fresco contains 6-BA + gibberellin GA4+7. Rates vary significantly by crop — consult the current Fine Americas label before mixing.',
     labelVerified: false
@@ -1505,15 +1510,16 @@ function renderMixerOutput() {
   if (methodKey === 'injector' || methodKey === 'drench' || methodKey === 'subirr') {
     // Generic 1:100 injector stock: stock_ml = calcDirect(ppm) * 100 * stockGal
     // Piccolo has explicit calcInjector; all others derived from calcDirect × 100
+    const injRatio = (method && method.ratio) ? method.ratio : 100;
     const calcStock = (stockGal) => {
       if (p.calcInjector) return p.calcInjector(ppm, stockGal);
-      return p.calcDirect(ppm) * 100 * stockGal;
+      return p.calcDirect(ppm) * injRatio * stockGal;
     };
     const unitLabel = p.isGranule ? 'g' : 'ml';
     const fmtAmount = p.isGranule ? fmtG : fmtMl;
     const ozLabel = p.isGranule ? 'oz' : 'fl oz';
     html += `<div class="rec-block" style="background:#f0fdf4;border-left:3px solid #16a34a;">
-      <div class="rec-label" style="color:#16a34a;">${methodLabel} — ${ppm} ppm final · 1:100 Injector Stock</div>
+      <div class="rec-label" style="color:#16a34a;">${methodLabel} — ${ppm} ppm final · 1:${injRatio} Injector Stock</div>
       <table class="mix-table" style="margin-top:8px;">
         <thead><tr><th>Stock Tank Size</th><th>${p.name} to Add</th><th>${ozLabel}</th></tr></thead>
         <tbody>${[0.5,1,2,3,5].map(s => {
